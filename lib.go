@@ -25,15 +25,23 @@ func NewConfig() *Config {
 }
 
 func (c *Config) Parse(content string) {
-	scanner := bufio.NewScanner(strings.NewReader(content))
+	cleanContent := strings.TrimSpace(content)
+	scanner := bufio.NewScanner(strings.NewReader(cleanContent))
+	line := 0
+
 	for scanner.Scan() {
+		line++
 		input := strings.TrimSpace(scanner.Text())
 		if input == "" {
 			continue
 		}
 
 		if len(input) <= 2 {
-			log.Fatal("bad config, input:", input)
+			log.Fatalf("bad config, input: %s [LINE NO = %d]\n", input, line)
+		}
+
+		if line == 1 && input[0] != '[' {
+			log.Fatalf("bad config, title missing [LINE NO = %d]\n", line)
 		}
 
 		switch input[0] {
@@ -46,27 +54,34 @@ func (c *Config) Parse(content string) {
 
 				if i == len(input)-1 && c == ']' {
 					break
-				} else if c == '\n' {
-					log.Fatal("bad config, title:", input)
-					break
+				} else if i == len(input)-1 && c != ']' {
+					log.Fatalf("bad config, title missing `]` at the end [LINE NO = %d]\n", line)
 				} else {
 					title.WriteString(string(c))
 				}
 			}
 
-			c.lastTitle = strings.TrimSpace(title.String())
+			cleanTitle := strings.TrimSpace(title.String())
+			c.lastTitle = cleanTitle
 		default:
 			if c.lastTitle == "" {
-				log.Fatal("i don't know error, title empty ???, input:", input)
+				log.Fatalf("i don't know error, title empty ???, input: %s [LINE NO = %d]\n", input, line)
 			}
 
 			exist := strings.Contains(input, "=")
 			if !exist {
-				log.Fatal("bad config, pair:", input)
+				log.Fatalf("bad config, pair: %s [LINE NO = %d]\n", input, line)
 			}
 			pair := strings.SplitN(input, "=", 2)
 			key := strings.TrimSpace(pair[0])
 			value := strings.TrimSpace(pair[1])
+
+			if key == "" {
+				log.Fatalf("bad config, pair key is empty [LINE NO = %d]\n", line)
+			}
+			if value == "" {
+				log.Fatalf("bad config, pair value is empty [LINE NO = %d]\n", line)
+			}
 
 			c.insert_pair(c.lastTitle, key, value)
 		}
