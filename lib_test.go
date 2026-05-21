@@ -10,7 +10,7 @@ func TestParse(t *testing.T) {
 		name = Game
 
 		[Base]
-		version = 0.1
+		version = 0.3
 		total = 5
 
 		[Config]
@@ -38,6 +38,25 @@ func TestParse(t *testing.T) {
 	goodVersion := "0.5"
 
 	if version != goodVersion {
-		t.Errorf("should be 0.5, got %s", goodVersion)
+		t.Errorf("should be 0.5, got %s", version)
+	}
+
+	// debugging
+	// config.Print()
+}
+
+func TestConfig_Parse(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for target function.
+		content string
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := NewConfig()
+			c.Parse(tt.content)
+		})
 	}
 }

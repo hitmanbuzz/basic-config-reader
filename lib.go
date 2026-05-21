@@ -77,10 +77,26 @@ func (c *Config) Parse(content string) {
 			value := strings.TrimSpace(pair[1])
 
 			if key == "" {
-				log.Fatalf("bad config, pair key is empty [LINE NO = %d]\n", line)
+				log.Fatalf("bad config, pair key is empty [LINE = %d]\n", line)
 			}
 			if value == "" {
-				log.Fatalf("bad config, pair value is empty [LINE NO = %d]\n", line)
+				log.Fatalf("bad config, pair value is empty [LINE = %d]\n", line)
+			}
+
+			if IsNum(key[0]) {
+				log.Fatalf("key can't start with a number [KEY = %s | LINE = %d]\n", key, line)
+			}
+
+			if IsNum(value[0]) {
+				// is num
+				for i := range value {
+					curr := value[i]
+					if curr == '.' {
+						if i >= len(value)-1 {
+							log.Fatalf("number can't end with dot in a decimal number type [VALUE = %s | LINE = %d]\n", value, line)
+						}
+					}
+				}
 			}
 
 			c.insert_pair(c.lastTitle, key, value)
@@ -90,6 +106,10 @@ func (c *Config) Parse(content string) {
 	if err := scanner.Err(); err != nil {
 		fmt.Println("Error reading string:", err)
 	}
+}
+
+func IsNum(char byte) bool {
+	return char >= '0' && char <= '9'
 }
 
 func (c *Config) insert_pair(title, key, value string) {
