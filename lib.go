@@ -13,19 +13,21 @@ type Data struct {
 }
 
 type Config struct {
-	Datas     map[string]Data
+	datas     map[string]Data
 	lastTitle string
+	source    string
 }
 
-func NewConfig() *Config {
+func NewConfig(source string) *Config {
 	return &Config{
-		Datas:     make(map[string]Data),
+		datas:     make(map[string]Data),
 		lastTitle: "",
+		source:    source,
 	}
 }
 
-func (c *Config) Parse(content string) {
-	cleanContent := strings.TrimSpace(content)
+func (c *Config) Parse() {
+	cleanContent := strings.TrimSpace(c.source)
 	scanner := bufio.NewScanner(strings.NewReader(cleanContent))
 	line := 0
 
@@ -47,7 +49,7 @@ func (c *Config) Parse(content string) {
 		switch input[0] {
 		case '[':
 			var title strings.Builder
-			title.WriteString(string(input[1]))
+			title.WriteByte(input[1])
 
 			for i := 2; i < len(input); i++ {
 				c := input[i]
@@ -57,7 +59,7 @@ func (c *Config) Parse(content string) {
 				} else if i == len(input)-1 && c != ']' {
 					log.Fatalf("bad config, title missing `]` at the end [LINE NO = %d]\n", line)
 				} else {
-					title.WriteString(string(c))
+					title.WriteByte(c)
 				}
 			}
 
@@ -104,7 +106,7 @@ func (c *Config) Parse(content string) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Println("Error reading string:", err)
+		log.Fatal("Error reading string:", err)
 	}
 }
 
@@ -113,7 +115,7 @@ func IsNum(char byte) bool {
 }
 
 func (c *Config) insert_pair(title, key, value string) {
-	data, exist := c.Datas[title]
+	data, exist := c.datas[title]
 	if !exist {
 		data = Data{
 			Title: title,
@@ -122,11 +124,11 @@ func (c *Config) insert_pair(title, key, value string) {
 	}
 
 	data.Pair[key] = value
-	c.Datas[title] = data
+	c.datas[title] = data
 }
 
 func (c *Config) isTitleFound(title string) bool {
-	_, exist := c.Datas[title]
+	_, exist := c.datas[title]
 	return exist
 }
 
@@ -146,7 +148,7 @@ func (c *Config) GrabPair(title string, pair_key string) (string, string, error)
 }
 
 func (c *Config) GrabPairs(title string) (map[string]string, error) {
-	data, exist := c.Datas[title]
+	data, exist := c.datas[title]
 	if !exist {
 		return nil, fmt.Errorf("title %s not found", title)
 	}
@@ -155,7 +157,7 @@ func (c *Config) GrabPairs(title string) (map[string]string, error) {
 
 // for debugging
 func (c *Config) Print() {
-	for _, data := range c.Datas {
+	for _, data := range c.datas {
 		for key, value := range data.Pair {
 			fmt.Printf("TITLE: %s | KEY: %s | VALUE: %s\n", data.Title, key, value)
 		}

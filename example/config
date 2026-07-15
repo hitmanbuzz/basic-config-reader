@@ -1,0 +1,12 @@
+[Information]
+Name = Config-Parser
+Version = 0.1
+Author = hitmanbuzz
+
+[Version-0.1]
+Dependencies = None
+Author = hitmanbuzz
+
+[Version-0.2]
+Dependencies = Standard Library
+Author = John Sina

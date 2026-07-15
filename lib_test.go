@@ -1,6 +1,7 @@
 package cfg_parser
 
 import (
+	"log"
 	"testing"
 )
 
@@ -10,7 +11,7 @@ func TestParse(t *testing.T) {
 		name = Game
 
 		[Base]
-		version = 0.3
+		version = 0.1
 		total = 5
 
 		[Config]
@@ -24,17 +25,23 @@ func TestParse(t *testing.T) {
 		name = Music
 	`
 
-	config := NewConfig()
-	config.Parse(input)
+	config := NewConfig(input)
+	config.Parse()
 
-	_, name, _ := config.GrabPair("Information", "name")
+	_, name, err := config.GrabPair("Information", "name")
+	if err != nil {
+		log.Fatalf("key not found: name\n")
+	}
 	goodName := "Music"
 
 	if name != goodName {
 		t.Errorf("should be Music, got %s", name)
 	}
 
-	_, version, _ := config.GrabPair("Base", "version")
+	_, version, err := config.GrabPair("Base", "version")
+	if err != nil {
+		log.Fatalf("key not found: version\n")
+	}
 	goodVersion := "0.5"
 
 	if version != goodVersion {
@@ -43,20 +50,4 @@ func TestParse(t *testing.T) {
 
 	// debugging
 	// config.Print()
-}
-
-func TestConfig_Parse(t *testing.T) {
-	tests := []struct {
-		name string // description of this test case
-		// Named input parameters for target function.
-		content string
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := NewConfig()
-			c.Parse(tt.content)
-		})
-	}
 }
